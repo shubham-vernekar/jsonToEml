@@ -28,7 +28,19 @@ class emlMaker:
     def __init__(self):
         pass
 
-    def generateEML(self, headers=[], bodyText="", bodyHTML="", attachments=[], emailTo="", emailFrom="", subject="", timestamp=""):
+    def generateEML(self, data):
+        # headers=[], bodyText="", bodyHTML="", attachments=[], emailTo="", emailFrom="", subject="", timestamp=""
+        headers = data.get("headers",[])
+        bodyText = data.get("text","")
+        bodyHTML = data.get("html","")
+        attachments = data.get("attachments",[])
+        emailFrom = data.get("from",{})
+        emailTo = data.get("to",[])
+        cc = data.get("cc",[])
+        bcc = data.get("bcc",[])
+        subject = data.get("subject","")
+        timestamp = data.get("date","")
+
         emlString = ""
 
         for key in headers:
