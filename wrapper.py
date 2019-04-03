@@ -2,35 +2,46 @@ from emlMaker import emlMaker
 from datetime import datetime
 import pytz # $ pip install pytz
 
-headers = {
-    "Thread-Topic": "This is testing",
-    "Thread-Index": "AQHUyPgULHE6ESLirk6/klEiiMXuSw==",
-    "Message-ID": "<A95740@MNA6368.namprd.prod.outlook.com>",
-    "Accept-Language": "en-US",
-    "Content-Language": "en-US",
+jsonData = {
+	'headers': {
+		'Message-ID': '<A95740@MNA6368.namprd.prod.outlook.com>',
+		'Accept-Language': 'en-US',
+		'Content-Language': 'en-US'
+	},
+	'from': {
+		'name': 'Ram',
+		'email': 'ram@sample.com'
+	},
+	'to': [{
+		'email': 'sample@gmail.com'
+	}],
+	'cc': [{
+		'name': 'Sam',
+		'email': 'sam@gmail.com'
+	}],
+	'bcc': [{
+		'email': 'one@gmail.com'
+	}, {
+		'email': 'two@gmail.com'
+	}],
+	'subject': 'Sample Subject',
+	'date': 'Tue, 02 Apr 2019 15:53:39 +0530',
+	'text': 'Hi,\nThis is a test message.\nThanks',
+	'html': """<html lang="en" dir="ltr">
+                  <body>
+                      <p style="color:#4f2bef; font-weight: bold;">Hi,<br>
+                        This is a test message.<br>This is a test message..<br>
+                        Thanks
+                      </p>
+                  </body>
+                </html>""",
+	'attachments': [{
+		'filename': 'D:\\EMLMaker\\sampleAttachments\\myself.jpg'
+	}, {
+		'name': 'sample.txt',
+		'raw': 'SGVsbG8sIApUaGlzIGlzIGEgc2FtcGxlIHR4dCBmaWxl'
+	}]
 }
 
-bodyText = """Hi,
-This is a test message.
-Thanks"""
-
-bodyHTML = """<html lang="en" dir="ltr">
-  <body>
-      <p style="color:#4f2bef; font-weight: bold;">Hi,<br>
-        This is a test message.<br>This is a test message.<br>This is a test message.<br>This is a test message.<br>This is a test message.<br>
-        Thanks
-      </p>
-  </body>
-</html>"""
-
-attachments = [
-    r"C:\Users\vernekar_s\Downloads\sample.pdf",
-]
-
-emailTo = '"sample@gmail.com" <sample@gmail.com>'
-emailFrom = "Ram <ram@sample.com>"
-subject = "Sample Subject"
-timestamp = datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%a, %d %b %Y %H:%M:%S %z")
-
 x = emlMaker()
-x.generateEML(headers, bodyText, bodyHTML, attachments, emailTo, emailFrom, subject, timestamp)
+x.generateEML(jsonData)
