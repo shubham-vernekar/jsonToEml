@@ -30,7 +30,7 @@ jsonData = {
 	'html': """<html lang="en" dir="ltr">
                   <body>
                       <p style="color:#4f2bef; font-weight: bold;">Hi,<br>
-                        This is a test message.<br>This is a test message..<br>
+                        This is a test message.<br>This is a test message..<br>This is a test message..<br>This is a test message..<br>This is a test message..<br>This is a test message..<br>
                         Thanks
                       </p>
                   </body>
@@ -43,5 +43,17 @@ jsonData = {
 	}]
 }
 
+
+outputFile = "test.eml"
 x = emlMaker()
-x.generateEML(jsonData)
+
+import time
+
+st = time.time()
+for i in range(100):
+	x.generateEML(jsonData,outputFile)
+	quit()
+et = time.time()-st
+
+print ("Total time = ",et)
+print ("Speed (rec/sec) = ", 100/et)

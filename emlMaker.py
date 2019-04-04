@@ -3,6 +3,7 @@ import string
 import random
 import base64
 from mimetypes import MimeTypes
+import re
 
 def generateBoundary(stringLength=10):
     letters = string.ascii_uppercase + string.digits*2
@@ -10,19 +11,31 @@ def generateBoundary(stringLength=10):
 
 def trimString(data, key, length):
     result = ""
-    count = 0
-    for char in data:
-        result += char
-        count += 1
 
-        if count >= length:
-            result += key
-            count = 0
+    x = [0] + [match.start() for match in re.finditer(r"\n",data)] + [len(data)]
+    # print (x)
+    for k in range(len(x)-1):
+        diff = x[k+1] - x[k]
+        delta = 0
+        while diff >= length :
+            diff -= length
+            delta += length # + len(key)
+            splitPoint = x[k] + delta
+            print (splitPoint)
 
-        if char == "\n":
-            count = 0
+    # for char in data:
+        # result += char
+        # count += 1
 
-    return result
+        # if count >= length:
+            #result += key
+            # count = 0
+
+        # if char == "\n":
+            # count = 0
+
+    return data
+    # return result
 
 def nameIDFormat(data):
     result = ""
@@ -42,8 +55,8 @@ class emlMaker:
     def __init__(self):
         pass
 
-    def generateEML(self, data):
-        # headers=[], bodyText="", bodyHTML="", attachments=[], emailTo="", emailFrom="", subject="", timestamp=""
+    def generateEML(self, data, outputFile):
+
         headers = data.get("headers",[])
         bodyText = data.get("text","")
         bodyHTML = data.get("html","")
@@ -110,7 +123,7 @@ class emlMaker:
             else:
                 basename = attachment.get("name","")
                 base64Data = trimString(attachment.get("raw",""), "\n", 76)
-                fileSize = b64Size(base64Data)
+                fileSize = int(b64Size(base64Data))
 
             mimeType = MimeTypes().guess_type(basename)[0]
 
@@ -120,5 +133,5 @@ Content-Disposition: attachment; filename="{}"; size={}\nContent-Transfer-Encodi
 
         emlString += "\n--{}--\n".format("_004" + boundary)
 
-        with open('test.eml','w') as wFile:
+        with open(outputFile,'w') as wFile:
             wFile.write(emlString)
