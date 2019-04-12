@@ -5,6 +5,7 @@ import base64
 import re
 from mimetypes import MimeTypes
 
+
 def b64Size(b64string):
     """
         Calcuate filesize of a base64 encoded file
@@ -26,16 +27,16 @@ class emlMaker:
         """
 
         # Extact field from JSON if available
-        headers = data.get("headers",[])
-        body_text = data.get("text","")
-        body_html = data.get("html","")
-        attachments = data.get("attachments",[])
-        email_from = data.get("from",{})
-        email_to = data.get("to",[])
-        cc = data.get("cc",[])
-        bcc = data.get("bcc",[])
-        subject = data.get("subject","")
-        timestamp = data.get("date","")
+        headers = data.get("headers", [])
+        body_text = data.get("text", "")
+        body_html = data.get("html", "")
+        attachments = data.get("attachments", [])
+        email_from = data.get("from", {})
+        email_to = data.get("to", [])
+        cc = data.get("cc", [])
+        bcc = data.get("bcc", [])
+        subject = data.get("subject", "")
+        timestamp = data.get("date", "")
 
         eml_string = ""
 
@@ -60,7 +61,7 @@ class emlMaker:
         if timestamp:
             eml_string += "Date: {}\n".format(timestamp)
 
-        if len(attachments) <0 :
+        if len(attachments) < 0:
             content_type = "multipart/mixed"
         else:
             content_type = "multipart/related"
@@ -73,38 +74,46 @@ class emlMaker:
 
         # Add email body in text and in html
         if body_text or body_html:
-            eml_string += '--{}\nContent-Type: multipart/alternative;\n\tboundary="{}"\n'.format("_004" + boundary, "_000" + boundary)
+            eml_string += '--{}\nContent-Type: multipart/alternative;\n\tboundary="{}"\n'.format(
+                "_004" + boundary, "_000" + boundary)
 
             if body_text:
-                eml_string += '\n--{}\nContent-Type: text/plain; charset="iso-8859-1"\nContent-Transfer-Encoding: quoted-printable\n'.format("_000" + boundary)
+                eml_string += '\n--{}\nContent-Type: text/plain; charset="iso-8859-1"'.format("_000" + boundary) +
+                '\nContent-Transfer-Encoding: quoted-printable\n'
+
                 eml_string += '\n{}\n'.format(body_text)
 
             if body_html:
-                eml_string += '\n--{}\nContent-Type: text/html; charset="iso-8859-1"\nContent-Transfer-Encoding: quoted-printable\n'.format("_000" + boundary)
-                eml_string += '\n{}\n'.format(self.trimLargeLines(body_html.replace("=","=3D"), 75, "=\n"))
+                eml_string += '\n--{}\nContent-Type: text/html; charset="iso-8859-1"'.format("_000" + boundary) +
+                '\nContent-Transfer-Encoding: quoted-printable\n'
+
+                eml_string += '\n{}\n'.format(self.trimLargeLines(
+                    body_html.replace("=", "=3D"), 75, "=\n"))
 
             eml_string += "\n--{}--\n".format("_000" + boundary)
 
         # Add attachments to the email
         for attachment in attachments:
             # Read file from disk
-            if attachment.get("filename",False):
-                filename = attachment.get("filename","")
+            if attachment.get("filename", False):
+                filename = attachment.get("filename", "")
                 basename = os.path.basename(filename)
-                with open(filename,'rb') as file:
+                with open(filename, 'rb') as file:
                     base64Data = base64.b64encode(file.read())
                     base64Data = self.trimLargeLines(base64Data.decode('utf-8'), 76, "\n")
                 fileSize = os.path.getsize(filename)
             else:
                 # File already in base64
-                basename = attachment.get("name","")
-                base64Data = self.trimLargeLines(attachment.get("raw",""), 76, "\n")
+                basename = attachment.get("name", "")
+                base64Data = self.trimLargeLines(attachment.get("raw", ""), 76, "\n")
                 fileSize = int(b64Size(base64Data))
 
+            # Find the file type of the attachment
             mimeType = MimeTypes().guess_type(basename)[0]
 
             eml_string += '\n--{}\nContent-Type: {}; name="{}"\nContent-Description: {}\n\
-Content-Disposition: attachment; filename="{}"; size={}\nContent-Transfer-Encoding: base64\n\n'.format("_004" + boundary,mimeType,basename,basename,basename,fileSize)
+Content-Disposition: attachment; filename="{}"; size={}\nContent-Transfer-Encoding: \
+base64\n\n'.format("_004" + boundary, mimeType, basename, basename, basename, fileSize)
             eml_string += "{}\n".format(base64Data)
 
         eml_string += "\n--{}--\n".format("_004" + boundary)
@@ -121,27 +130,25 @@ Content-Disposition: attachment; filename="{}"; size={}\nContent-Transfer-Encodi
         new_lines = [0] + [match.start() for match in re.finditer(r"\n", data)] + [len(data)]
 
         split_pts = []
+        last_pt = 0
+        result = ""
         for k in range(len(new_lines)-1):
             diff = new_lines[k+1] - new_lines[k]
             delta = 0
             # if distance between two new lines is larger than the max length
-            while diff >= length :
+            while diff >= length:
                 diff -= length
                 delta += length
-                # Add location of point to split
-                split_pts.append(new_lines[k] + delta)
-
-        if split_pts:
-            result = data[:split_pts[0]] + key
-            for k in range(len(split_pts)-1):
-                if data[split_pts[k]:split_pts[k+1]].isspace():
-                    result += data[split_pts[k]:split_pts[k+1]] + "\n"
+                new_pt = new_lines[k] + delta
+                if data[last_pt:new_pt].isspace():
+                    result += data[last_pt:new_pt] + "\n"
                 else:
-                    result += data[split_pts[k]:split_pts[k+1]] + key
+                    result += data[last_pt:new_pt] + key
 
-            result += data[split_pts[k+1]:]
-            return result
-        return data
+                last_pt = new_pt
+
+        result += data[last_pt:]
+        return result
 
     def writeNameEmail(self, data):
         """
@@ -152,9 +159,9 @@ Content-Disposition: attachment; filename="{}"; size={}\nContent-Transfer-Encodi
             name = i.get("name", "")
             email = i.get("email", "")
             if name:
-                result += '{} <{}>; '.format(name,email)
+                result += '{} <{}>; '.format(name, email)
             else:
-                result += '"{}" <{}>; '.format(email,email)
+                result += '"{}" <{}>; '.format(email, email)
         return result[:-2]
 
     def generateBoundary(self, string_length=10):
@@ -168,5 +175,5 @@ Content-Disposition: attachment; filename="{}"; size={}\nContent-Transfer-Encodi
         """
             Export the eml string to a file
         """
-        with open(output_file,'w') as wFile:
+        with open(output_file, 'w') as wFile:
             wFile.write(eml_string)
