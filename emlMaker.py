@@ -7,24 +7,18 @@ from mimetypes import MimeTypes
 
 
 def b64Size(b64string):
-    """
-        Calcuate filesize of a base64 encoded file
-    """
+    """ Calcuate filesize of a base64 encoded file """
     return (len(b64string) * 3) / 4 - b64string.count('=', -2)
 
 
 class emlMaker:
-    """
-        Generates an EML file from the JSON passed
-    """
+    """ Generates an EML file from the JSON passed """
 
     def __init__(self):
         pass
 
     def generateEML(self, data, output_file):
-        """
-            Generate EML data
-        """
+        """ Generate EML data """
 
         # Extact field from JSON if available
         headers = data.get("headers", [])
@@ -122,10 +116,9 @@ base64\n\n'.format("_004" + boundary, mimeType, basename, basename, basename, fi
         self.writeFile(eml_string, output_file)
 
     def trimLargeLines(self, data, length, key="\n"):
-        """
-            Adds a new line in case a line is too long
-            length = max length of the line
-        """
+        """ Adds a new line in case a line is too long
+            length = max length of the line """
+
         # Find positions of new lines
         new_lines = [0] + [match.start() for match in re.finditer(r"\n", data)] + [len(data)]
 
@@ -151,9 +144,8 @@ base64\n\n'.format("_004" + boundary, mimeType, basename, basename, basename, fi
         return result
 
     def writeNameEmail(self, data):
-        """
-            Insert name and email ID in eml format
-        """
+        """ Insert name and email ID in eml format """
+
         result = ""
         for i in data:
             name = i.get("name", "")
@@ -165,15 +157,13 @@ base64\n\n'.format("_004" + boundary, mimeType, basename, basename, basename, fi
         return result[:-2]
 
     def generateBoundary(self, string_length=10):
-        """
-            Generates a random string to be used as boundary
-        """
+        """ Generates a random string to be used as boundary """
+
         letters = string.ascii_uppercase + string.digits*2
         return "_" + ''.join(random.choice(letters) for i in range(string_length)) + "_"
 
     def writeFile(self, eml_string, output_file):
-        """
-            Export the eml string to a file
-        """
+        """ Export the eml string to a file """
+
         with open(output_file, 'w') as wFile:
             wFile.write(eml_string)
