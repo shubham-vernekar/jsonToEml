@@ -11,31 +11,30 @@ def generateBoundary(stringLength=10):
 
 def trimString(data, key, length):
     result = ""
-
     x = [0] + [match.start() for match in re.finditer(r"\n",data)] + [len(data)]
-    # print (x)
+
+    locs = []
     for k in range(len(x)-1):
         diff = x[k+1] - x[k]
         delta = 0
         while diff >= length :
             diff -= length
-            delta += length # + len(key)
+            delta += length
             splitPoint = x[k] + delta
-            print (splitPoint)
+            locs.append(splitPoint)
 
-    # for char in data:
-        # result += char
-        # count += 1
+    if locs:
+        ans = data[:locs[0]] + key
+        for k in range(len(locs)-1):
+            if data[locs[k]:locs[k+1]].isspace():
+                ans += data[locs[k]:locs[k+1]] + "\n"
+            else:
+                ans += data[locs[k]:locs[k+1]] + key
 
-        # if count >= length:
-            #result += key
-            # count = 0
-
-        # if char == "\n":
-            # count = 0
+        ans += data[locs[k+1]:]
+        return ans
 
     return data
-    # return result
 
 def nameIDFormat(data):
     result = ""

@@ -52,7 +52,6 @@ import time
 st = time.time()
 for i in range(100):
 	x.generateEML(jsonData,outputFile)
-	quit()
 et = time.time()-st
 
 print ("Total time = ",et)
